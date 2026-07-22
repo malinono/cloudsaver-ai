@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>6 AWS Waste Patterns Draining Your Budget (and How to Find Them Free)</title>
+  <meta name="description" content="Most AWS bills hide 27–32% wasted spend. Here are the 6 AWS waste patterns — zombie EBS, idle load balancers, unused Elastic IPs, over-provisioned EC2 and more — and how to find them in your Cost Explorer CSV in 5 minutes, for free." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://getcloudsaver.com/blog-aws-waste.html" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "6 AWS Waste Patterns Draining Your Budget (and How to Find Them Free)",
+    "description": "The 6 most common AWS waste patterns and how to find them in your billing CSV for free.",
+    "author": { "@type": "Organization", "name": "CloudSaver AI" },
+    "publisher": { "@type": "Organization", "name": "CloudSaver AI" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0f1115; --card: #1a1d24; --text: #e6e8eb; --text-secondary: #9aa0a6;
+      --text-muted: #6b7280; --red: #ff5c5c; --accent: #6ea8fe; --green: #4ade80;
+      --border: #2a2e37;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.7; font-size: 17px;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 48px 20px 80px; }
+    header .brand { color: var(--accent); font-size: 14px; letter-spacing: .5px; text-transform: uppercase; }
+    h1 { font-size: 34px; line-height: 1.25; margin: 12px 0 18px; }
+    h2 { font-size: 24px; margin: 44px 0 14px; border-left: 3px solid var(--accent); padding-left: 12px; }
+    h3 { font-size: 19px; margin: 26px 0 8px; color: var(--text); }
+    p { margin: 14px 0; color: var(--text); }
+    .lead { font-size: 19px; color: var(--text-secondary); }
+    .stat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin: 28px 0; }
+    .stat .big { font-size: 40px; font-weight: 800; color: var(--red); }
+    .stat .src { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+    ul { padding-left: 22px; }
+    li { margin: 8px 0; }
+    code { background: var(--card); padding: 2px 6px; border-radius: 4px; font-size: 14px; color: var(--green); }
+    .pattern { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 22px; margin: 18px 0; }
+    .pattern .tag { display: inline-block; font-size: 12px; font-weight: 700; color: var(--bg); background: var(--accent); padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; }
+    .fix { color: var(--green); font-size: 15px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .cta { background: linear-gradient(135deg, #1f6feb22, #6ea8fe11); border: 1px solid var(--accent); border-radius: 14px; padding: 26px 24px; margin: 40px 0; text-align: center; }
+    .cta a.btn { display: inline-block; background: var(--accent); color: #fff; font-weight: 700; padding: 12px 26px; border-radius: 10px; margin-top: 12px; }
+    .back { font-size: 14px; color: var(--text-secondary); }
+    footer { border-top: 1px solid var(--border); margin-top: 56px; padding-top: 20px; font-size: 14px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">CloudSaver AI · Blog</div>
+      <h1>6 AWS Waste Patterns Draining Your Budget — and How to Find Them Free</h1>
+      <p class="lead">You are probably paying for cloud resources you forgot about. Here is how to find them in your own billing CSV in about five minutes.</p>
+      <p class="back"><a href="index.html">← Back to CloudSaver (free AWS waste scanner)</a></p>
+    </header>
+
+    <div class="stat">
+      <div class="big">27–32%</div>
+      <div>of typical cloud spend is wasted, according to Flexera's <em>State of the Cloud</em> report (industry estimate, 2026).</div>
+      <div class="src">Source: Flexera State of the Cloud · industry estimate 27–32%</div>
+    </div>
+
+    <h2>Why AWS bills get so wasteful</h2>
+    <p>AWS does not bill you for "waste" — it bills you for resources that exist. The problem is that most waste is <strong>forgotten infrastructure</strong>: a load balancer left running after a service was deleted, an EBS volume orphaned when its instance was terminated, an Elastic IP nobody uses anymore. None of it shows up in your daily work, but all of it shows up on the invoice.</p>
+    <p>The good news: almost all of it is findable in the CSV you can already export from the AWS Billing Console. You do not need a paid platform to start.</p>
+
+    <h2>The 6 AWS waste patterns</h2>
+    <p>These are the six patterns a typical Cost Explorer export will reveal. We use the same list in our free scanner.</p>
+
+    <div class="pattern">
+      <span class="tag">Pattern 1</span>
+      <h3>Zombie resources (orphaned volumes & unattached disks)</h3>
+      <p>When you terminate an EC2 instance but forget its attached EBS volume, the volume keeps billing you per GB-month. These show up as <code>unattached</code>, <code>orphaned</code>, or <code>no-instance</code> line items.</p>
+      <p class="fix">Fix: identify unattached volumes in EC2 → Volumes, snapshot what you need, then delete the rest.</p>
+    </div>
+
+    <div class="pattern">
+      <span class="tag">Pattern 2</span>
+      <h3>Over-provisioned compute</h3>
+      <p>Many instances run at 5–15% CPU but sit on a <code>c5.4xlarge</code> or <code>r5.2xlarge</code> because someone "picked a safe size." The difference between right-sized and oversized can be 4–10x in cost.</p>
+      <p class="fix">Fix: check CloudWatch CPU utilization; downsize to a smaller family or use burstable <code>t3</code>/<code>t4g</code> instances where usage is spiky.</p>
+    </div>
+
+    <div class="pattern">
+      <span class="tag">Pattern 3</span>
+      <h3>Idle load balancers</h3>
+      <p>An Application Load Balancer costs a fixed hourly rate whether it serves 1 request or 1 million. After a project is retired, the ALB often keeps running with near-zero traffic.</p>
+      <p class="fix">Fix: cross-check ALBs against actual request counts; delete those with no meaningful traffic.</p>
+    </div>
+
+    <div class="pattern">
+      <span class="tag">Pattern 4</span>
+      <h3>Stale EBS snapshots</h3>
+      <p>Snapshots older than 90 days that no longer back up an active instance are pure storage cost. They accumulate quietly because deletion is never urgent.</p>
+      <p class="fix">Fix: apply a retention policy (e.g. keep 30–90 days), delete snapshots with no associated running instance.</p>
+    </div>
+
+    <div class="pattern">
+      <span class="tag">Pattern 5</span>
+      <h3>Unused Elastic IPs</h3>
+      <p>AWS charges for every Elastic IP that is <strong>not</strong> associated with a running instance. A "just in case" IP costs you every month for doing nothing.</p>
+      <p class="fix">Fix: release any EIP with no attached resource. They are free only while bound to a live instance.</p>
+    </div>
+
+    <div class="pattern">
+      <span class="tag">Pattern 6</span>
+      <h3>Wrong storage tier</h3>
+      <p>Data that is rarely accessed but stored in the Standard tier could move to Infrequent Access or Glacier at a fraction of the price. This is common in S3 buckets and old EBS snapshots.</p>
+      <p class="fix">Fix: enable Intelligent-Tiering or lifecycle policies to auto-move cold data to cheaper tiers.</p>
+    </div>
+
+    <h2>How to check your own bill (free, 5 minutes)</h2>
+    <ol>
+      <li>Open the <strong>AWS Billing Console</strong> and export your bill as a CSV (Cost Explorer → download, or the monthly CSV invoice).</li>
+      <li>Open it and scan the <code>Product/Line Item</code> column for the keywords above: <code>unattached</code>, <code>IdleAddress</code>, <code>SnapshotUsage</code>, <code>ELB</code>, oversized instance types.</li>
+      <li>Add up the monthly cost of anything you do not recognize or no longer need. That number is your recoverable waste.</li>
+    </ol>
+    <p>Doing it by hand works, but it is easy to miss items in a 200-line export. That is exactly why we built a free scanner.</p>
+
+    <div class="cta">
+      <h3 style="margin-top:0;">Skip the spreadsheet — scan it free</h3>
+      <p>CloudSaver reads your AWS billing CSV in your browser, flags all 6 waste patterns, and shows what you can recover. No signup, no upload to a server.</p>
+      <a class="btn" href="index.html">Scan my AWS bill free →</a>
+    </div>
+
+    <h2>Frequently asked questions</h2>
+    <h3>Is 27–32% wasted spend real?</h3>
+    <p>It is the industry estimate from Flexera's State of the Cloud report (2026), based on surveys of hundreds of cloud decision-makers. Individual accounts vary, but the range is widely cited across Gartner, IDC and CloudZero as well.</p>
+    <h3>Do I need a paid tool to find AWS waste?</h3>
+    <p>No. The patterns above are visible in the CSV you can export today. A free scanner just speeds it up and catches items you might miss by hand.</p>
+    <h3>Is my billing data safe with a scanner?</h3>
+    <p>With CloudSaver, the CSV is processed locally in your browser and is never uploaded to a server. Check the <a href="privacy.html">privacy policy</a> of any tool you use.</p>
+
+    <footer>
+      <p>CloudSaver AI — a free, browser-based AWS waste scanner. <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
+    </footer>
+  </div>
+</body>
+</html>
