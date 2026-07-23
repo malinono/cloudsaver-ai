@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Read Your AWS Billing CSV and Find Waste in 10 Minutes</title>
+  <meta name="description" content="A step-by-step guide to exporting your AWS cost CSV and using filters to surface idle resources, oversized instances, and silent money leaks — no paid tool required." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://getcloudsaver.com/blog-aws-billing-csv.html" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "How to Read Your AWS Billing CSV and Find Waste in 10 Minutes",
+    "description": "A practical guide to exporting and analyzing your AWS cost CSV to find waste.",
+    "author": { "@type": "Organization", "name": "CloudSaver AI" },
+    "publisher": { "@type": "Organization", "name": "CloudSaver AI" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0f1115; --card: #1a1d24; --text: #e6e8eb; --text-secondary: #9aa0a6;
+      --text-muted: #6b7280; --red: #ff5c5c; --accent: #6ea8fe; --green: #4ade80;
+      --border: #2a2e37;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.7; font-size: 17px;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 48px 20px 80px; }
+    header .brand { color: var(--accent); font-size: 14px; letter-spacing: .5px; text-transform: uppercase; }
+    h1 { font-size: 34px; line-height: 1.25; margin: 12px 0 18px; }
+    h2 { font-size: 24px; margin: 44px 0 14px; border-left: 3px solid var(--accent); padding-left: 12px; }
+    h3 { font-size: 19px; margin: 26px 0 8px; color: var(--text); }
+    p { margin: 14px 0; color: var(--text); }
+    .lead { font-size: 19px; color: var(--text-secondary); }
+    ul { padding-left: 22px; }
+    li { margin: 8px 0; }
+    code { background: var(--card); padding: 2px 6px; border-radius: 4px; font-size: 14px; color: var(--green); }
+    .step { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 22px; margin: 18px 0; }
+    .step .num { display: inline-block; font-size: 12px; font-weight: 700; color: var(--bg); background: var(--accent); padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; }
+    .save { color: var(--green); font-size: 14px; }
+    .warn { color: var(--red); font-size: 14px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .cta { background: linear-gradient(135deg, #1f6feb22, #6ea8fe11); border: 1px solid var(--accent); border-radius: 14px; padding: 26px 24px; margin: 40px 0; text-align: center; }
+    .cta a.btn { display: inline-block; background: var(--accent); color: #fff; font-weight: 700; padding: 12px 26px; border-radius: 10px; margin-top: 12px; }
+    .back { font-size: 14px; color: var(--text-secondary); }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; }
+    th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; }
+    th { background: var(--card); color: var(--accent); }
+    td { color: var(--text-secondary); }
+    footer { border-top: 1px solid var(--border); margin-top: 56px; padding-top: 20px; font-size: 14px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">CloudSaver AI · Blog</div>
+      <h1>How to Read Your AWS Billing CSV and Find Waste in 10 Minutes</h1>
+      <p class="lead">The free scanner does the heavy lifting, but it helps to know what's under the hood. Here's how to export your AWS cost data and spot the leaks yourself — in a spreadsheet, no consultant required.</p>
+      <p class="back"><a href="index.html">← Back to CloudSaver (free AWS waste scanner)</a></p>
+    </header>
+
+    <h2>Step 1 — Export the CSV</h2>
+    <div class="step">
+      <span class="num">Where</span>
+      <p>Open the <strong>AWS Billing Console</strong> → <strong>Cost &amp; Usage Reports</strong> (or "Bills" → "Download CSV"). AWS lets you download a monthly CSV of every line item. For deeper analysis, create a CUR (Cost &amp; Usage Report) that lands in an S3 bucket — but the monthly bill CSV is enough for a first pass.</p>
+      <p class="warn">Note: the CSV is your own billing data. Keep it local; don't email it to strangers. CloudSaver reads it <em>in your browser</em> and never uploads it.</p>
+    </div>
+
+    <h2>Step 2 — Know the columns that matter</h2>
+    <p>A raw AWS billing CSV has 20+ columns. You only need a handful to find waste:</p>
+    <table>
+      <tr><th>Column</th><th>What it tells you</th></tr>
+      <tr><td><code>Service</code></td><td>Which AWS product (EC2, S3, RDS, …). Sort by this to see where the money goes.</td></tr>
+      <tr><td><code>UsageType</code></td><td>The specific meter — e.g. <code>BoxUsage:t3.micro</code>, <code>EBS:VolumeUsage.gp2</code>. Idle charges show up here.</td></tr>
+      <tr><td><code>ResourceId</code></td><td>The actual resource. Empty ResourceId often = account-level fees you can't attribute.</td></tr>
+      <tr><td><code>UnBlendedCost</code> / <code>BlendedCost</code></td><td>The dollar amount. Use UnBlended for a clean per-account view.</td></tr>
+      <tr><td><code>UsageQuantity</code></td><td>How much you used. Near-zero usage + non-zero cost = a prime suspect.</td></tr>
+    </table>
+
+    <h2>Step 3 — Three filters that surface 80% of the waste</h2>
+
+    <div class="step">
+      <span class="num">Filter A</span>
+      <h3>Idle but billed: <code>UsageQuantity</code> ≈ 0, cost &gt; 0</h3>
+      <p>Filter the CSV for rows where usage is tiny but the cost isn't. Classic hits: unattached EBS volumes (<code>EBS:VolumeUsage</code> with no instance), Elastic IPs with no attachment, and NAT gateways nobody routes through. These are pure leaks.</p>
+      <p class="save">Typical recovery: 5–15% of a messy bill.</p>
+    </div>
+
+    <div class="step">
+      <span class="num">Filter B</span>
+      <h3>Oversized by Service: EC2 cost vs CPU you never use</h3>
+      <p>Sort the CSV by <code>Service = EC2</code> and sum <code>UnBlendedCost</code> by <code>UsageType</code>. Cross-reference with CloudWatch average CPU (from the <a href="blog-aws-cost-optimization.html">cost optimization post</a>). Steady &lt;20% CPU + a big <code>BoxUsage</code> line = downsize candidate.</p>
+      <p class="save">Typical recovery: 30–60% of that instance's cost.</p>
+    </div>
+
+    <div class="step">
+      <span class="num">Filter C</span>
+      <h3>Orphaned by ResourceId: repeating IDs you don't recognize</h3>
+      <p>Pivot the CSV by <code>ResourceId</code> and look for resources that recur monthly but map to nothing you can name. Old RDS snapshots, forgotten load balancers, and test environments left running 24/7 show up here.</p>
+      <p class="save">Typical recovery: $10–200/month per stale resource, more at scale.</p>
+    </div>
+
+    <h2>Step 4 — Turn findings into a one-page action list</h2>
+    <p>Once you've filtered, write down three columns: <strong>resource</strong>, <strong>monthly cost</strong>, <strong>safe action</strong> (downsize / delete-after-snapshot / schedule-off). Total the monthly cost — that number is what you're leaking every single month, compounded annually.</p>
+    <p>This is exactly the format the Pro Audit delivers, founder-reviewed, so you don't have to do the spreadsheet yourself. But doing it once by hand is the fastest way to believe the number.</p>
+
+    <div class="cta">
+      <h3 style="margin-top:0;">Skip the spreadsheet</h3>
+      <p>CloudSaver reads the same CSV in your browser and flags these patterns automatically — idle volumes, oversized instances, orphaned resources — in seconds.</p>
+      <a class="btn" href="index.html">Scan my AWS bill free →</a>
+      <p style="margin-top:16px;font-size:14px;color:var(--text-secondary);">Want a founder-reviewed write-up of your specific bill? Email <a href="mailto:support@getcloudsaver.com">support@getcloudsaver.com</a>.</p>
+    </div>
+
+    <h2>Frequently asked questions</h2>
+    <h3>Is the billing CSV the same as the Cost &amp; Usage Report (CUR)?</h3>
+    <p>The monthly bill CSV is a simplified view; the CUR is the full, row-per-resource dataset AWS can deliver to S3. For a 10-minute audit, the bill CSV is enough. For deep attribution, use the CUR.</p>
+    <h3>Why not just use Cost Explorer?</h3>
+    <p>Cost Explorer is great for charts but hides the per-resource rows that reveal orphans and idle charges. The CSV (or a scanner built on it) shows the actual leaking line items.</p>
+    <h3>Will reading the CSV teach me anything the scanner misses?</h3>
+    <p>No — the scanner finds the same patterns faster. Doing it by hand once just builds the intuition, and makes the scanner's output easier to trust.</p>
+
+    <footer>
+      <p>CloudSaver AI — a free, browser-based AWS waste scanner. <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
+    </footer>
+  </div>
+</body>
+</html>
