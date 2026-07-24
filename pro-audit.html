@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudSaver Pro Audit — What Happens After You Pay</title>
+<style>
+:root {
+  --bg: #f8f9fb;
+  --card: #ffffff;
+  --border: #e8ecf1;
+  --text: #1a1d23;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --blue: #2563eb;
+  --blue-light: #eff6ff;
+  --blue-dark: #1e40af;
+  --red: #dc2626;
+  --red-light: #fef2f2;
+  --amber: #d97706;
+  --amber-light: #fffbeb;
+  --green: #059669;
+  --green-light: #ecfdf5;
+  --purple: #7c3aed;
+  --purple-light: #f5f3ff;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+nav {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 0; border-bottom: 1px solid var(--border);
+}
+nav .logo { font-weight: 700; font-size: 20px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+nav .logo span { font-size: 24px; }
+nav .back-btn {
+  background: var(--blue-light); color: var(--blue); text-decoration: none;
+  padding: 9px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;
+}
+nav .back-btn:hover { background: #dbeafe; }
+.hero { text-align: center; padding: 64px 0 40px; }
+.hero .badge {
+  display: inline-block; background: var(--green-light); color: var(--green);
+  font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 20px; margin-bottom: 20px;
+}
+.hero h1 { font-size: 38px; font-weight: 800; line-height: 1.18; margin-bottom: 14px; letter-spacing: -0.5px; }
+.hero p { font-size: 18px; color: var(--text-secondary); max-width: 600px; margin: 0 auto; }
+.section { margin: 48px 0; }
+.section h2 { font-size: 24px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.section h2 .num {
+  background: var(--blue); color: #fff; width: 30px; height: 30px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
+}
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 28px; margin-bottom: 16px;
+}
+.deliverable { display: flex; gap: 16px; align-items: flex-start; }
+.deliverable .ic { font-size: 26px; flex-shrink: 0; }
+.deliverable h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.deliverable p { color: var(--text-secondary); font-size: 15px; }
+.steps { counter-reset: step; }
+.step-item {
+  display: flex; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--border);
+}
+.step-item:last-child { border-bottom: none; }
+.step-item .step-num {
+  background: var(--blue-light); color: var(--blue); font-weight: 700;
+  width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0; font-size: 15px;
+}
+.step-item .step-body h4 { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.step-item .step-body p { color: var(--text-secondary); font-size: 14px; }
+.step-item .step-body code {
+  background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--text);
+}
+.prereq-list { list-style: none; }
+.prereq-list li {
+  padding: 10px 0 10px 30px; position: relative; color: var(--text-secondary); font-size: 15px;
+  border-bottom: 1px dashed var(--border);
+}
+.prereq-list li:last-child { border-bottom: none; }
+.prereq-list li::before { content: "▸"; position: absolute; left: 8px; color: var(--blue); font-weight: 700; }
+.prereq-list strong { color: var(--text); }
+.code-box {
+  background: #0f172a; color: #e2e8f0; border-radius: var(--radius-sm); padding: 16px 18px;
+  font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.7; margin-top: 12px;
+  overflow-x: auto;
+}
+.code-box .c { color: #64748b; }
+.email-box {
+  background: var(--blue-light); border: 1px solid #bfdbfe; border-radius: var(--radius-sm);
+  padding: 18px 20px; margin-top: 12px;
+}
+.email-box .to { font-size: 14px; color: var(--text-secondary); }
+.email-box .addr { font-size: 17px; font-weight: 700; color: var(--blue-dark); }
+.email-box .subj { font-size: 14px; color: var(--text); margin-top: 6px; }
+.note {
+  background: var(--amber-light); border-left: 4px solid var(--amber);
+  padding: 14px 18px; border-radius: var(--radius-sm); font-size: 14px; color: #92400e; margin-top: 14px;
+}
+.safety {
+  background: var(--green-light); border: 1px solid #a7f3d0; border-radius: var(--radius);
+  padding: 20px 24px; display: flex; gap: 14px; align-items: flex-start;
+}
+.safety .ic { font-size: 24px; }
+.safety p { color: #065f46; font-size: 14px; }
+.faq-item { border-bottom: 1px solid var(--border); padding: 16px 0; }
+.faq-item:last-child { border-bottom: none; }
+.faq-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.faq-item p { color: var(--text-secondary); font-size: 14px; }
+footer { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 13px; border-top: 1px solid var(--border); margin-top: 40px; }
+footer a { color: var(--text-muted); text-decoration: underline; }
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo"><span>☁️</span> CloudSaver</div>
+  <a href="index.html" class="back-btn">← Back to Home</a>
+</nav>
+
+<div class="container">
+  <section class="hero">
+    <div class="badge">✓ One-time payment · $19</div>
+    <h1>CloudSaver Pro Audit</h1>
+    <p>Your personalized AWS waste report — prepared by a cloud cost specialist and delivered to your inbox within <strong>3 business days</strong>.</p>
+  </section>
+
+  <section class="section">
+    <h2><span class="num">1</span> What you get</h2>
+    <div class="card deliverable">
+      <div class="ic">📊</div>
+      <div>
+        <h3>A structured AWS waste report (PDF)</h3>
+        <p>A clear, prioritized breakdown of where your money is leaking — every finding sorted by dollar impact, with a concrete fix and an estimated monthly saving for each.</p>
+      </div>
+    </div>
+    <div class="card deliverable">
+      <div class="ic">🎯</div>
+      <div>
+        <h3>An action plan, not just data</h3>
+        <p>We don't dump raw CSV rows on you. You get a ranked to-do list: what to fix first, what's safe to change today, and what needs care.</p>
+      </div>
+    </div>
+    <div class="card deliverable">
+      <div class="ic">💰</div>
+      <div>
+        <h3>An estimated monthly saving</h3>
+        <p>A bottom-line number: roughly how much you can save per month if you apply the recommendations. <em>(Estimate based on your usage data — actual savings vary with your workload.)</em></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2><span class="num">2</span> How it works</h2>
+    <div class="steps">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>You complete the purchase</h4>
+          <p>Pay the one-time $19 fee. No subscription, no renewal.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>You send us your AWS billing data</h4>
+          <p>Export your monthly Cost &amp; Usage Report as CSV and email it to us (steps below). No AWS login or IAM access required.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>We audit it</h4>
+          <p>A specialist reviews your data, cross-checks it against common waste patterns, and builds your report.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>You receive the report</h4>
+          <p>Within <strong>3 business days</strong>, your PDF audit lands in your inbox. Apply the fixes at your own pace.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2><span class="num">3</span> What you need to prepare</h2>
+    <div class="card">
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:10px;">A. Your AWS billing CSV</h3>
+      <p style="color:var(--text-secondary);font-size:14px;margin-bottom:6px;">The easiest export to get — your monthly cost CSV:</p>
+      <div class="code-box">
+<span class="c"># In the AWS Console:</span>
+1. Go to <strong>Billing</strong> → <strong>Cost &amp; Usage Reports</strong>
+2. (Or simpler) Go to <strong>Billing Dashboard</strong> → <strong>Bills</strong>
+3. Select a month → click <strong>"Download CSV"</strong>
+4. Attach that CSV to your email
+      </div>
+      <div class="note">Prefer a deeper audit? A full CUR (Cost &amp; Usage Report) export gives us more detail. Either works — the monthly CSV is enough to start.</div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:10px;">B. A few context details (optional, helps us prioritize)</h3>
+      <ul class="prereq-list">
+        <li>Your approximate <strong>monthly AWS spend</strong></li>
+        <li>The <strong>main services</strong> you use (EC2, RDS, S3, Lambda…)</li>
+        <li>Any <strong>critical windows</strong> where you can't risk downtime</li>
+        <li>The <strong>biggest pain</strong> you want us to focus on (e.g. "RDS is too expensive", "I suspect idle resources")</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2><span class="num">4</span> Send it to us</h2>
+    <div class="email-box">
+      <div class="to">Email your CSV + the details above to:</div>
+      <div class="addr">support@getcloudsaver.com</div>
+      <div class="subj">Subject: <code>Pro Audit — [Your name / company]</code></div>
+    </div>
+    <div style="margin-top:14px;text-align:center;">
+      <a href="report-template.html" style="color:var(--blue);font-weight:600;text-decoration:none;">👉 View a sample report →</a>
+    </div>
+    <div class="safety" style="margin-top:16px;">
+      <div class="ic">🔒</div>
+      <p><strong>Your data stays safe.</strong> We only need the billing CSV — never your AWS credentials, IAM keys, or account access. The CSV contains cost figures, not secrets. We delete your data after delivery unless you ask us to keep it.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2><span class="num">5</span> FAQ</h2>
+    <div class="card">
+      <div class="faq-item">
+        <h4>Do I need to give you AWS access?</h4>
+        <p>No. We work entirely from the billing CSV you export. Your account stays in your hands.</p>
+      </div>
+      <div class="faq-item">
+        <h4>What if I don't understand the report?</h4>
+        <p>Each finding includes a plain-English explanation and a specific fix. If anything is unclear, reply to our email and we'll clarify.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Is the $19 a subscription?</h4>
+        <p>No. It's a one-time payment for a single audit. No auto-renew, no upsell pressure.</p>
+      </div>
+      <div class="faq-item">
+        <h4>What if my spend is very small?</h4>
+        <p>That's fine — the report still shows what's there. For very low bills the savings may be modest, and we'll say so honestly.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <p><a href="index.html">Home</a> &middot; <a href="privacy.html">Privacy Policy</a> &middot; <a href="terms.html">Terms of Service</a></p>
+  <p style="margin-top:8px;">© 2026 CloudSaver AI</p>
+</footer>
+</body>
+</html>
