@@ -372,8 +372,15 @@ input[type="file"] { display: none; }
         <li>Specialist-reviewed report + fix plan</li>
         <li>Delivered by email within 3 business days</li>
       </ul>
-      <button class="plan-btn solid" id="pro-buy-btn">Buy Pro Audit — $19</button>
-      <div id="paypal-button-container" style="display:none;margin-top:12px;"></div>
+      <div style="margin-top:12px;">
+        <style>.pp-DJJSSGQ9GDHFC{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
+        <form action="https://www.paypal.com/ncp/payment/DJJSSGQ9GDHFC" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+          <input type="hidden" name="return" value="https://getcloudsaver.com/pro-audit.html" />
+          <input class="pp-DJJSSGQ9GDHFC" type="submit" value="Pay $19" />
+          <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
+          <section style="font-size: 0.75rem;color:#9aa0a6;">Powered by <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="PayPal" style="height:0.875rem;vertical-align:middle;"/></section>
+        </form>
+      </div>
       <p style="margin-top:12px;font-size:14px;"><a href="pro-audit.html" style="color:#6ea8fe;text-decoration:underline;">See what's included →</a></p>
       <p style="margin-top:6px;font-size:13px;color:#9aa0a6;">Questions? Email <a href="mailto:support@getcloudsaver.com" style="color:#6ea8fe;text-decoration:underline;">support@getcloudsaver.com</a></p>
     </div>
@@ -386,14 +393,6 @@ input[type="file"] { display: none; }
 </footer>
 
 <script>
-// ========== PAYMENT CONFIG ==========
-// PayPal 收款（替代已被拒的 Creem）。PayPal 商户审核通过后，把下面换成你的真实 Client ID：
-//   1) 登录 paypal.com → 开发者/应用 → 创建 App → 复制 Client ID（live 环境）
-//   2) 替换下面的 YOUR_PAYPAL_CLIENT_ID_HERE
-// 未填真实 ID 前，点击购买按钮会提示"收款未就绪"，绝不会出现死链 / 假购买。
-const PAYPAL_CLIENT_ID = 'YOUR_PAYPAL_CLIENT_ID_HERE';
-const PAYPAL_AMOUNT = '19.00'; // 与定价卡一致：$19 one-time
-
 // ========== UPLOAD HANDLING ==========
 const uploadArea = document.getElementById('upload-area');
 const fileInput = document.getElementById('file-input');
@@ -401,52 +400,10 @@ const processingSection = document.getElementById('processing-section');
 const resultsSection = document.getElementById('results-section');
 const uploadCard = document.querySelector('.upload-card');
 
-// Pro 卡 "Buy" 按钮：点击后加载并渲染 PayPal 收款按钮（占位 ID 时提示未就绪，防假购买）
-const proBuyBtn = document.getElementById('pro-buy-btn');
-if (proBuyBtn) {
-  proBuyBtn.addEventListener('click', () => {
-    const ready = typeof PAYPAL_CLIENT_ID === 'string'
-      && PAYPAL_CLIENT_ID.startsWith('A')
-      && !PAYPAL_CLIENT_ID.includes('YOUR_');
-    if (!ready) {
-      alert('Payment is not ready yet. Please email support@getcloudsaver.com to purchase the Pro Audit.');
-      return;
-    }
-    showPayPalCheckout();
-  });
-}
-
-let paypalSdkLoaded = false;
-function showPayPalCheckout() {
-  const container = document.getElementById('paypal-button-container');
-  if (!container) return;
-  container.style.display = 'block';
-  if (paypalSdkLoaded) return; // 已渲染过，不重复加载
-  const sdk = document.createElement('script');
-  sdk.src = 'https://www.paypal.com/sdk/js?client-id=' + encodeURIComponent(PAYPAL_CLIENT_ID) + '&currency=USD';
-  sdk.onload = () => {
-    paypal.Buttons({
-      createOrder: (data, actions) => actions.order.create({
-        purchase_units: [{ amount: { value: PAYPAL_AMOUNT }, description: 'CloudSaver AI — Pro Audit ($19)' }]
-      }),
-      onApprove: (data, actions) => actions.order.capture().then(details => {
-        const email = details.payer.email_address;
-        const name = details.payer.name.given_name;
-        container.innerHTML = '<div style="padding:12px;background:#ecfdf5;color:#059669;border-radius:8px;font-size:14px;">'
-          + '✅ Paid by ' + name + ' (' + email + '). We will email your audit within 3 business days.</div>';
-        console.log('PayPal Order:', details.id, '| Payer:', email);
-      }),
-      onError: (err) => {
-        container.innerHTML = '<div style="padding:12px;background:#fef2f2;color:#b42318;border-radius:8px;font-size:14px;">'
-          + '⚠️ Payment failed. Please email support@getcloudsaver.com</div>';
-        console.error('PayPal error:', err);
-      }
-    }).render('#paypal-button-container');
-    paypalSdkLoaded = true;
-  };
-  sdk.onerror = () => { container.innerHTML = 'Payment SDK failed to load. Email support@getcloudsaver.com'; };
-  document.body.appendChild(sdk);
-}
+// ========== PAYMENT (PayPal NCP hosted button) ==========
+// Pro Audit 收款由定价卡内的 PayPal 托管按钮 <form> 直接处理，无需前端 SDK。
+// 付款完成后 PayPal 会跳转回 pro-audit.html（form 内 return 字段）。
+// 如需自动建工单，后续可接 PayPal webhook 或定时拉取交易记录。
 
 uploadArea.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', handleFile);
