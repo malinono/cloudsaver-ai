@@ -270,5 +270,20 @@ footer a { color: var(--text-muted); text-decoration: underline; }
   <p><a href="index.html">Home</a> &middot; <a href="privacy.html">Privacy Policy</a> &middot; <a href="terms.html">Terms of Service</a></p>
   <p style="margin-top:8px;">© 2026 CloudSaver AI</p>
 </footer>
+<script>
+// Funnel tracking — see cloudsaver-ai/track-worker.js
+const TRACK_ENDPOINT = 'https://cloudsaver-track.malinono1015.workers.dev/track';
+function track(event, meta) {
+  try {
+    const body = JSON.stringify(Object.assign({ event: event, ts: Date.now(), page: location.pathname }, meta || {}));
+    if (navigator.sendBeacon) navigator.sendBeacon(TRACK_ENDPOINT, new Blob([body], { type: 'text/plain' }));
+    else fetch(TRACK_ENDPOINT, { method: 'POST', body: body, headers: { 'Content-Type': 'text/plain' }, keepalive: true });
+  } catch (e) {}
+}
+track('pro_audit_view');
+document.querySelectorAll('form[action*="paypal.com/ncp/payment"]').forEach(f => {
+  f.addEventListener('submit', () => track('pro_audit_pay_click'));
+});
+</script>
 </body>
 </html>

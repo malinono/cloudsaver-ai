@@ -450,6 +450,31 @@ input[type="file"] { display: none; }
 </footer>
 
 <script>
+// ========== FUNNEL TRACKING (lightweight, no PII) ==========
+// Events: pageview, scan_start, scan_complete, pro_audit_click, waitlist_submit
+// Backend: Cloudflare Worker "cloudsaver-track" (see cloudsaver-ai/track-worker.js)
+const TRACK_ENDPOINT = 'https://cloudsaver-track.malinono1015.workers.dev/track';
+function track(event, meta) {
+  try {
+    const body = JSON.stringify(Object.assign({ event: event, ts: Date.now(), page: location.pathname }, meta || {}));
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(TRACK_ENDPOINT, new Blob([body], { type: 'text/plain' }));
+    } else {
+      fetch(TRACK_ENDPOINT, { method: 'POST', body: body, headers: { 'Content-Type': 'text/plain' }, keepalive: true });
+    }
+  } catch (e) { /* tracking must never break the UX */ }
+}
+track('pageview');
+// Track Pro Audit (PayPal $19) intent
+document.querySelectorAll('form[action*="paypal.com/ncp/payment"]').forEach(f => {
+  f.addEventListener('submit', () => track('pro_audit_click'));
+});
+// Track waitlist email captures
+['hero-waitlist-form', 'waitlist-form'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('submit', () => track('waitlist_submit'));
+});
+
 // ========== UPLOAD HANDLING ==========
 const uploadArea = document.getElementById('upload-area');
 const fileInput = document.getElementById('file-input');
@@ -480,6 +505,7 @@ function handleFile(e) {
 }
 
 async function processFile(file) {
+  track('scan_start');
   if (!file.name.endsWith('.csv')) {
     alert('Please upload a CSV file.');
     return;
@@ -789,6 +815,7 @@ function isStorageTierIssue(service, usage, desc, cost) {
 
 // ========== RENDER RESULTS ==========
 function renderResults(analysis) {
+  track('scan_complete', { waste: analysis.totalWaste, findings: analysis.findings.length });
   document.getElementById('waste-total').textContent = '$' + analysis.totalWaste.toLocaleString('en-US', {minimumFractionDigits: 2});
   document.getElementById('waste-yearly').textContent = "That's $" + analysis.yearlyWaste.toLocaleString('en-US', {minimumFractionDigits: 2}) + ' thrown away each year';
   const ctaWaste = document.getElementById('cta-waste');
