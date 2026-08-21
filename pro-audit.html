@@ -135,7 +135,7 @@ footer a { color: var(--text-muted); text-decoration: underline; }
     <div style="margin-top:20px;">
       <style>.pp-DJJSSGQ9GDHFC{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
       <form action="https://www.paypal.com/ncp/payment/DJJSSGQ9GDHFC" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
-        <input type="hidden" name="return" value="https://getcloudsaver.com/pro-audit.html" />
+        <input type="hidden" name="return" value="https://getcloudsaver.com/pro-audit.html?src=paid" />
         <input class="pp-DJJSSGQ9GDHFC" type="submit" value="Pay $19" />
         <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
         <section style="font-size: 0.75rem;color:#9aa0a6;">Powered by <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="PayPal" style="height:0.875rem;vertical-align:middle;"/></section>
@@ -273,9 +273,27 @@ footer a { color: var(--text-muted); text-decoration: underline; }
 <script>
 // Funnel tracking — see cloudsaver-ai/track-worker.js
 const TRACK_ENDPOINT = 'https://cloudsaver-track.malinono1015.workers.dev/track';
+// ---- source attribution: prefer ?src=, else infer from referrer ----
+function resolveSrc() {
+  try {
+    const p = new URLSearchParams(window.location.search);
+    const s = (p.get('src') || p.get('ref') || '').trim().toLowerCase();
+    if (s) return s.slice(0, 30);
+    const r = document.referrer || '';
+    if (r.includes('twitter.com') || r.includes('x.com')) return 'x';
+    if (r.includes('news.ycombinator.com')) return 'hn';
+    if (r.includes('reddit.com')) return 'reddit';
+    if (r.includes('indiehackers.com')) return 'ih';
+    if (r.includes('linkedin.com')) return 'linkedin';
+    if (r.includes('paypal.com')) return 'paid';
+    if (r) return 'ref:' + (new URL(r).hostname.replace(/^www\./, '').slice(0, 20));
+    return 'direct';
+  } catch (e) { return 'direct'; }
+}
+const SRC = resolveSrc();
 function track(event, meta) {
   try {
-    const body = JSON.stringify(Object.assign({ event: event, ts: Date.now(), page: location.pathname }, meta || {}));
+    const body = JSON.stringify(Object.assign({ event: event, src: SRC, ts: Date.now(), page: location.pathname }, meta || {}));
     if (navigator.sendBeacon) navigator.sendBeacon(TRACK_ENDPOINT, new Blob([body], { type: 'text/plain' }));
     else fetch(TRACK_ENDPOINT, { method: 'POST', body: body, headers: { 'Content-Type': 'text/plain' }, keepalive: true });
   } catch (e) {}
