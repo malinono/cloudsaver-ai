@@ -273,6 +273,23 @@ footer a { color: var(--text-muted); text-decoration: underline; }
 <script>
 // Funnel tracking — see cloudsaver-ai/track-worker.js
 const TRACK_ENDPOINT = 'https://cloudsaver-track.malinono1015.workers.dev/track';
+// ---- DEV TEST MODE: tag self/dev traffic so it never pollutes real analytics ----
+// Arm once: open the page with ?test=1  (persists in localStorage on THIS browser only)
+// Disarm:   open with ?test=0
+// While armed, every beacon's src is prefixed with "test:" (e.g. test:direct), which the
+// worker stores as a separate KV key — real counts stay clean.
+function resolveTestMode() {
+  try {
+    const q = new URLSearchParams(window.location.search);
+    if (q.has('test')) {
+      const on = q.get('test') === '1';
+      localStorage.setItem('cloudsaver_test', on ? '1' : '0');
+      return on;
+    }
+    return localStorage.getItem('cloudsaver_test') === '1';
+  } catch (e) { return false; }
+}
+const IS_TEST = resolveTestMode();
 // ---- source attribution: prefer ?src=, else infer from referrer ----
 function resolveSrc() {
   try {
@@ -293,7 +310,8 @@ function resolveSrc() {
 const SRC = resolveSrc();
 function track(event, meta) {
   try {
-    const body = JSON.stringify(Object.assign({ event: event, src: SRC, ts: Date.now(), page: location.pathname }, meta || {}));
+    const src = IS_TEST ? ('test:' + SRC) : SRC;
+    const body = JSON.stringify(Object.assign({ event: event, src: src, ts: Date.now(), page: location.pathname, test: IS_TEST ? 1 : 0 }, meta || {}));
     if (navigator.sendBeacon) navigator.sendBeacon(TRACK_ENDPOINT, new Blob([body], { type: 'text/plain' }));
     else fetch(TRACK_ENDPOINT, { method: 'POST', body: body, headers: { 'Content-Type': 'text/plain' }, keepalive: true });
   } catch (e) {}

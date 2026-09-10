@@ -455,6 +455,24 @@ input[type="file"] { display: none; }
 // Events: pageview, scan_start, scan_complete, pro_audit_click, waitlist_submit
 // Backend: Cloudflare Worker "cloudsaver-track" (see cloudsaver-ai/track-worker.js)
 const TRACK_ENDPOINT = 'https://cloudsaver-track.malinono1015.workers.dev/track';
+// ---- DEV TEST MODE: tag self/dev traffic so it never pollutes real analytics ----
+// Arm once: open the page with ?test=1  (persists in localStorage on THIS browser only)
+// Disarm:   open with ?test=0
+// While armed, every beacon's src is prefixed with "test:" (e.g. test:direct), which the
+// worker stores as a separate KV key — real counts (direct / x-launch / ih …) stay clean.
+// Real visitors on other devices never get this flag, so they are never affected.
+function resolveTestMode() {
+  try {
+    const q = new URLSearchParams(window.location.search);
+    if (q.has('test')) {
+      const on = q.get('test') === '1';
+      localStorage.setItem('cloudsaver_test', on ? '1' : '0');
+      return on;
+    }
+    return localStorage.getItem('cloudsaver_test') === '1';
+  } catch (e) { return false; }
+}
+const IS_TEST = resolveTestMode();
 // ---- source attribution: prefer ?src=, else infer from referrer ----
 function resolveSrc() {
   try {
@@ -475,7 +493,8 @@ function resolveSrc() {
 const SRC = resolveSrc();
 function track(event, meta) {
   try {
-    const body = JSON.stringify(Object.assign({ event: event, src: SRC, ts: Date.now(), page: location.pathname }, meta || {}));
+    const src = IS_TEST ? ('test:' + SRC) : SRC;
+    const body = JSON.stringify(Object.assign({ event: event, src: src, ts: Date.now(), page: location.pathname, test: IS_TEST ? 1 : 0 }, meta || {}));
     if (navigator.sendBeacon) {
       navigator.sendBeacon(TRACK_ENDPOINT, new Blob([body], { type: 'text/plain' }));
     } else {
@@ -500,6 +519,16 @@ document.querySelectorAll('form[action*="paypal.com/ncp/payment"]').forEach(f =>
   const el = document.getElementById(id);
   if (el) el.addEventListener('submit', () => track('waitlist_submit'));
 });
+
+// DEV TEST MODE badge — visible only while armed, reminds you traffic is tagged test:*
+if (IS_TEST) {
+  try {
+    const b = document.createElement('div');
+    b.textContent = 'TEST MODE — your visits are tagged test:* and excluded from real analytics';
+    b.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:99999;background:#f59e0b;color:#1a1d23;font:12px/1.4 system-ui,sans-serif;padding:6px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.2);max-width:260px;';
+    document.body.appendChild(b);
+  } catch (e) {}
+}
 
 // ========== UPLOAD HANDLING ==========
 const uploadArea = document.getElementById('upload-area');
