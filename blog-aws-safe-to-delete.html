@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Tell Whether an AWS Resource Is Actually Safe to Delete</title>
+  <meta name="description" content="Finding wasted AWS resources is easy. The hard part is knowing what you can safely remove without breaking something. A practical four-question framework for safe cloud cleanup." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://getcloudsaver.com/blog-aws-safe-to-delete.html" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "How to Tell Whether an AWS Resource Is Actually Safe to Delete",
+    "description": "A practical framework for deciding what AWS resources are safe to remove, not just what looks wasteful.",
+    "author": { "@type": "Person", "name": "Jerry Chen" },
+    "publisher": { "@type": "Organization", "name": "CloudSaver AI" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #ffffff; --card: #f6f8fa; --text: #1f2328; --text-secondary: #57606a;
+      --text-muted: #8b949e; --red: #cf222e; --accent: #1f6feb; --green: #1a7f37;
+      --border: #d0d7de;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.7; font-size: 17px;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 48px 20px 80px; }
+    header .brand { color: var(--accent); font-size: 14px; letter-spacing: .5px; text-transform: uppercase; }
+    h1 { font-size: 34px; line-height: 1.25; margin: 12px 0 18px; }
+    h2 { font-size: 24px; margin: 44px 0 14px; border-left: 3px solid var(--accent); padding-left: 12px; }
+    h3 { font-size: 19px; margin: 26px 0 8px; color: var(--text); }
+    p { margin: 14px 0; color: var(--text); }
+    .lead { font-size: 19px; color: var(--text-secondary); }
+    ul { padding-left: 22px; }
+    li { margin: 8px 0; }
+    code { background: var(--card); padding: 2px 6px; border-radius: 4px; font-size: 14px; color: var(--green); }
+    blockquote {
+      margin: 18px 0; padding: 12px 18px; background: var(--card);
+      border-left: 3px solid var(--green); border-radius: 0 8px 8px 0; color: var(--text-secondary);
+      font-style: italic;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .q {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 18px 22px; margin: 18px 0;
+    }
+    .q .num { display: inline-block; font-size: 12px; font-weight: 700; color: #fff; background: var(--accent); padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; }
+    .back { font-size: 14px; color: var(--text-secondary); }
+    .sign { margin-top: 32px; color: var(--text-secondary); }
+    .cta { background: #ddf4ff; border: 1px solid var(--accent); border-radius: 14px; padding: 24px; margin: 44px 0; text-align: center; }
+    .cta a.btn { display: inline-block; background: var(--accent); color: #fff; font-weight: 700; padding: 11px 24px; border-radius: 10px; margin-top: 10px; }
+    footer { border-top: 1px solid var(--border); margin-top: 56px; padding-top: 20px; font-size: 14px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">CloudSaver AI · Blog</div>
+      <h1>How to Tell Whether an AWS Resource Is Actually Safe to Delete</h1>
+      <p class="lead">Finding wasted AWS resources is easy. The hard part is knowing what you can actually remove without breaking something. Here's the framework I use.</p>
+      <p class="back"><a href="index.html">← Back to CloudSaver (free AWS waste scanner)</a></p>
+    </header>
+
+    <p>I used to manage cloud accounts at a company.</p>
+    <p>One thing that always bothered me was how easy it was to keep paying for things nobody really needed anymore.</p>
+    <p>It wasn't usually one huge mistake.</p>
+    <p>It was a lot of small ones:</p>
+    <ul>
+      <li>A temporary service that kept running after the project ended.</li>
+      <li>Snapshots or backups that were no longer needed.</li>
+      <li>A data volume that was still being charged after the original instance was gone.</li>
+      <li>A stopped EC2 instance where the instance charge had ended, but the attached storage was still costing money.</li>
+      <li>A public IPv4 address or another resource that nobody remembered to clean up.</li>
+    </ul>
+    <p>Each item might look small.</p>
+    <p>But small charges that nobody owns can stay there for a long time.</p>
+    <p>That was part of why I started building CloudSaver.</p>
+    <p>But the more I worked on it, the more I realized that finding something expensive is usually not the hardest part.</p>
+    <p>The harder question is:</p>
+    <p><strong>Can I safely remove it?</strong></p>
+    <p>That's a different problem.</p>
+
+    <h2>"Should delete" and "safe to delete" are not the same thing</h2>
+    <p>A resource can look unused and still be important.</p>
+    <p>A snapshot might look like storage waste, but it could be the only rollback point for a system.</p>
+    <p>A data volume might be attached to something that is no longer obvious from the console, but is still referenced by an old process or recovery workflow.</p>
+    <p>And an "idle" instance may not be costing instance runtime anymore once it is stopped, while its attached EBS volumes or other billable resources can continue to incur charges. AWS also charges for public IPv4 addresses, so the surrounding resources matter too. <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html">AWS EC2 documentation</a></p>
+    <p>So I don't think the goal should be:</p>
+    <blockquote>Find waste and delete it.</blockquote>
+    <p>A better goal is:</p>
+    <blockquote>Find waste, understand the dependencies, and remove only what you can explain and recover from.</blockquote>
+
+    <h2>I use four questions before deleting something</h2>
+
+    <div class="q">
+      <span class="num">Question 1</span>
+      <h3>Can I rebuild it from code or configuration?</h3>
+      <p>If the answer is yes, that's a good sign.</p>
+      <p>If the answer is no, slow down.</p>
+      <p>Before deleting something that contains unique state, I want to know what the recovery path is.</p>
+    </div>
+
+    <div class="q">
+      <span class="num">Question 2</span>
+      <h3>What still depends on it?</h3>
+      <p>This is the question that gets missed most often.</p>
+      <p>Don't just look at the resource itself.</p>
+      <p>Look for:</p>
+      <ul>
+        <li>applications</li>
+        <li>scripts</li>
+        <li>automation</li>
+        <li>backup jobs</li>
+        <li>network dependencies</li>
+        <li>recovery procedures</li>
+      </ul>
+      <p>A resource can look isolated and still be part of a larger workflow.</p>
+    </div>
+
+    <div class="q">
+      <span class="num">Question 3</span>
+      <h3>If something goes wrong, can I recover?</h3>
+      <p>A cheap resource can become expensive very quickly if deleting it creates an outage or destroys the only recovery path.</p>
+      <p>Before deleting, I want to know:</p>
+      <ul>
+        <li>what the rollback plan is</li>
+        <li>what backup exists</li>
+        <li>how long recovery would take</li>
+        <li>who would notice if the resource disappeared</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="num">Question 4</span>
+      <h3>What evidence says nobody is using it?</h3>
+      <p>"Nobody knows what this is" is not the same as "nobody uses it."</p>
+      <p>Better evidence includes:</p>
+      <ul>
+        <li>usage data</li>
+        <li>logs</li>
+        <li>monitoring</li>
+        <li>recent activity</li>
+        <li>dependency information</li>
+        <li>infrastructure configuration</li>
+        <li>application references</li>
+      </ul>
+      <p>The more evidence you have, the less you're relying on guesswork.</p>
+    </div>
+
+    <h2>A few common examples</h2>
+
+    <h3>Snapshots and backups</h3>
+    <p>Don't delete a snapshot just because it is old.</p>
+    <p>First check whether it is a meaningful rollback point, part of a recovery process, or required by your retention policy.</p>
+
+    <h3>EBS volumes / data disks</h3>
+    <p>If an instance is gone, that does not automatically mean every attached volume is safe to delete.</p>
+    <p>Confirm the volume is no longer needed, check whether anything still references it, and make sure you know what data you are removing.</p>
+
+    <h3>Stopped or idle EC2 instances</h3>
+    <p>Stopping an EC2 instance stops instance-usage charges, but EBS storage and other billable resources associated with it can remain. AWS also charges for public IPv4 addresses. <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html">AWS EC2 documentation</a></p>
+    <p>So "stopped" is not the same thing as "nothing here costs money."</p>
+    <p>At the same time, that doesn't mean the right answer is always "terminate it."</p>
+    <p>The right answer depends on the business dependency and recovery plan.</p>
+
+    <h3>Trials or automatic renewals</h3>
+    <p>These are not always deletion problems.</p>
+    <p>Sometimes the right action is to disable, downgrade, or cancel a service rather than delete a resource.</p>
+    <p>Again, the question is not simply:</p>
+    <blockquote>Is this costing money?</blockquote>
+    <p>It is:</p>
+    <blockquote>What exactly is costing money, and what happens if I turn it off?</blockquote>
+
+    <h2>The rule I keep coming back to</h2>
+    <p>Cloud cost cleanup is not just a detection problem.</p>
+    <p>It's a decision problem.</p>
+    <p>Finding a resource that looks wasteful is relatively easy.</p>
+    <p>Being confident enough to remove it is harder.</p>
+    <p>That's the part I care about when I build CloudSaver.</p>
+    <p>I'm building CloudSaver around this exact problem.</p>
+
+    <p>If you've ever had an AWS resource that looked obviously unnecessary but you still didn't dare delete it, I'd be curious to hear how you handled it.</p>
+
+    <p class="sign">Best,<br/>Jerry Chen</p>
+
+    <div class="cta">
+      <h3 style="margin-top:0;">If this sounds like your AWS account</h3>
+      <p>CloudSaver is a free, browser-based scanner that reads your billing CSV locally and shows the resources worth a closer look — no automatic deletions, no credentials uploaded.</p>
+      <a class="btn" href="index.html">Scan my AWS bill free →</a>
+    </div>
+
+    <footer>
+      <p>CloudSaver AI — a free, browser-based AWS waste scanner. <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
+    </footer>
+  </div>
+</body>
+</html>
