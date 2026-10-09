@@ -560,43 +560,49 @@ function handleFile(e) {
 }
 
 async function processFile(file) {
-  track('scan_start');
   if (!file.name.endsWith('.csv')) {
     alert('Please upload a CSV file.');
     return;
   }
 
+  track('scan_start');
+
   uploadCard.parentElement.style.display = 'none';
   processingSection.style.display = 'block';
   resultsSection.style.display = 'none';
 
-  // Step 1
-  await sleep(800);
-  document.getElementById('step1').className = 'done';
-  document.getElementById('step2').className = 'active';
+  try {
+    // Step 1
+    await sleep(800);
+    document.getElementById('step1').className = 'done';
+    document.getElementById('step2').className = 'active';
 
-  const text = await file.text();
-  const rows = parseCSV(text);
+    const text = await file.text();
+    const rows = parseCSV(text);
 
-  // Step 2
-  await sleep(1000);
-  document.getElementById('step2').className = 'done';
-  document.getElementById('step3').className = 'active';
+    // Step 2
+    await sleep(1000);
+    document.getElementById('step2').className = 'done';
+    document.getElementById('step3').className = 'active';
 
-  const analysis = analyzeWaste(rows);
+    const analysis = analyzeWaste(rows);
 
-  // Step 3
-  await sleep(600);
-  document.getElementById('step3').className = 'done';
+    // Step 3
+    await sleep(600);
+    document.getElementById('step3').className = 'done';
 
-  await sleep(400);
-  processingSection.style.display = 'none';
-  renderResults(analysis);
-  resultsSection.style.display = 'block';
-  resultsSection.scrollIntoView({ behavior: 'smooth' });
+    await sleep(400);
+    processingSection.style.display = 'none';
+    renderResults(analysis);
+    resultsSection.style.display = 'block';
+    resultsSection.scrollIntoView({ behavior: 'smooth' });
 
-  document.getElementById('step2').className = '';
-  document.getElementById('step3').className = '';
+    document.getElementById('step2').className = '';
+    document.getElementById('step3').className = '';
+  } catch (err) {
+    track('scan_error', { error: String((err && err.message) || err) });
+    alert('Something went wrong while analyzing your file. Please try again.');
+  }
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
