@@ -689,16 +689,15 @@ function analyzeWaste(rows) {
       });
     }
 
-    // --- Pattern 2: Over-provisioned compute ---
+    // --- Pattern 2: Large instance (needs utilization check) ---
     else if (isOverProvisioned(service, usage, desc, cost)) {
-      const savings = Math.round(cost * 0.6 * 100) / 100;
       findings.push({
         type: 'overprov',
-        severity: 'high',
-        title: 'Over-Provisioned Instance',
-        description: `${service} ${resource || desc}: ${usage}. This instance type is likely oversized for its actual workload. Consider rightsizing.`,
-        wastedAmount: savings,
-        savingsTip: `Downgrade to a smaller instance family. Estimated savings: $${savings.toFixed(2)}/mo.`
+        severity: 'low',
+        title: 'Large Instance — Verify Utilization',
+        description: `${service} ${resource || desc}: ${usage}. Large instance type detected. Cloud Saver can't see actual CPU/utilization from the bill alone — confirm it's fully used before considering rightsizing.`,
+        wastedAmount: 0,
+        savingsTip: `Verify utilization in CloudWatch. Only rightsize if consistently underused. No savings claimed without usage data.`
       });
     }
 
@@ -738,16 +737,15 @@ function analyzeWaste(rows) {
       });
     }
 
-    // --- Pattern 6: Storage tier optimization ---
+    // --- Pattern 6: Standard-tier storage (needs access-frequency check) ---
     else if (isStorageTierIssue(service, usage, desc, cost)) {
-      const savings = Math.round(cost * 0.4 * 100) / 100;
       findings.push({
         type: 'storage',
         severity: 'low',
-        title: 'Storage Tier Optimization',
-        description: `${service}: ${desc || usage}. Data in standard tier that could be moved to infrequent access or Glacier based on access patterns.`,
-        wastedAmount: savings,
-        savingsTip: `Move infrequently accessed data to S3 IA or Glacier. Save $${savings.toFixed(2)}/mo.`
+        title: 'Standard-Tier Storage — Verify Access',
+        description: `${service}: ${desc || usage}. Standard-tier storage over $10/mo. Cloud Saver can't see access frequency from the bill alone — confirm whether it's infrequently accessed before moving to IA/Glacier.`,
+        wastedAmount: 0,
+        savingsTip: `Check access patterns. Move only confirmed cold data to S3 IA or Glacier. No savings claimed without access data.`
       });
     }
 
@@ -834,8 +832,6 @@ function isZombieResource(service, usage, resource, desc) {
     /0\s*(requests|request|hits|invocations|calls)/,
     /zero.?usage/, /no.?traffic/, /no.?activity/
   ];
-  // Also detect EC2s with 0 CPU credit usage (simulated)
-  if (combined.includes('ec2') && /t[23]\./.test(combined) && Math.random() < 0.25) return true;
   return zombiePatterns.some(p => p.test(combined));
 }
 
@@ -847,7 +843,7 @@ function isOverProvisioned(service, usage, desc, cost) {
     /16xlarge/, /12xlarge/, /8xlarge/, /metal/,
     /dedicated.?host/
   ];
-  return overProvPatterns.some(p => p.test(combined)) && Math.random() < 0.4;
+  return overProvPatterns.some(p => p.test(combined));
 }
 
 function isIdleLoadBalancer(service, usage, desc) {
@@ -871,7 +867,7 @@ function isStorageTierIssue(service, usage, desc, cost) {
   const combined = (service + ' ' + usage + ' ' + desc).toLowerCase();
   if (!combined.includes('s3') && !combined.includes('storage') && !combined.includes('bucket')) return false;
   if (combined.includes('glacier') || combined.includes('ia') || combined.includes('infrequent')) return false;
-  return cost > 10 && Math.random() < 0.3;
+  return cost > 10;
 }
 
 // ========== RENDER RESULTS ==========
