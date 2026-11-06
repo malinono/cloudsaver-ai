@@ -107,6 +107,12 @@ nav .back-btn:hover { background: #dbeafe; }
   background: var(--amber-light); border-left: 4px solid var(--amber);
   padding: 14px 18px; border-radius: var(--radius-sm); font-size: 14px; color: #92400e; margin-top: 14px;
 }
+/* scope note — added 2026-11-06, see _复原备份/2026-11-06/README for rollback */
+.scope-note {
+  max-width: 620px; margin: 18px auto 0; padding: 14px 18px;
+  background: var(--blue-light); border: 1px solid #bfdbfe; border-radius: var(--radius-sm);
+  font-size: 13px; line-height: 1.7; color: var(--text-secondary); text-align: left;
+}
 .safety {
   background: var(--green-light); border: 1px solid #a7f3d0; border-radius: var(--radius);
   padding: 20px 24px; display: flex; gap: 14px; align-items: flex-start;
@@ -131,7 +137,7 @@ footer a { color: var(--text-muted); text-decoration: underline; }
   <section class="hero">
     <div class="badge">✓ One-time payment · $19</div>
     <h1>CloudSaver Pro Audit</h1>
-    <p>Your personalized AWS cost report — prepared by a cloud cost specialist and delivered to your inbox within <strong>3 business days</strong>.</p>
+    <p>Your personalized AWS cost report — prepared by a cloud cost specialist and delivered to your inbox within <strong>5 business days</strong>.</p>
     <div style="margin-top:20px;">
       <style>.pp-DJJSSGQ9GDHFC{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
       <form action="https://www.paypal.com/ncp/payment/DJJSSGQ9GDHFC" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
@@ -140,6 +146,11 @@ footer a { color: var(--text-muted); text-decoration: underline; }
         <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
         <section style="font-size: 0.75rem;color:#9aa0a6;">Powered by <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="PayPal" style="height:0.875rem;vertical-align:middle;"/></section>
       </form>
+    </div>
+    <!-- scope note — added 2026-11-06, rollback see _复原备份/2026-11-06/README -->
+    <div class="scope-note">
+      $19 gets you one report based on your aws billing csv. it points out which cost signals are worth checking in the console, and what to verify before you touch anything. it won't tell you a resource is unused, and it doesn't delete anything. you decide what to remove.<br><br>
+      you'll get it within 5 business days. one follow-up email within 7 days if something in the report isn't clear. no credentials, no subscription.
     </div>
   </section>
 
@@ -196,7 +207,7 @@ footer a { color: var(--text-muted); text-decoration: underline; }
         <div class="step-num">4</div>
         <div class="step-body">
           <h4>You receive the report</h4>
-          <p>Within <strong>3 business days</strong>, your PDF audit lands in your inbox. Apply the fixes at your own pace.</p>
+          <p>Within <strong>5 business days</strong>, your PDF audit lands in your inbox. Apply the fixes at your own pace.</p>
         </div>
       </div>
     </div>
