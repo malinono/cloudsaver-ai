@@ -1,16 +1,16 @@
 # CloudSaver AI
 
-> Free, browser-only AWS cost waste scanner. Your bill CSV never leaves your machine.
+> Free, browser-only AWS cost waste scanner. With the free scanner, your bill CSV never leaves your machine. (The paid $19 Pro Audit receives your CSV by email — see the privacy policy.)
 
 CloudSaver reads your AWS Cost & Usage Report (CUR) CSV **entirely in your browser** and outputs a **safe-delete checklist** — what's likely waste, what order to remove it in, and what to check before you touch anything. No upload, no account, no auto-delete.
 
 ## Why it's open source
-- Pure front-end (HTML + client-side JS). The scanner logic runs in your browser, so you can read every line and confirm **your data never leaves the page**.
+- Pure front-end (HTML + client-side JS). The scanner logic runs in your browser, so you can read every line and confirm **the free scanner never sends your CSV off the page**.
 - Open source is the strongest proof of that claim.
 - The scanner is free. Real revenue is the **$19 Pro Audit** (a human double-checks your plan before you run it) — not the code.
 
 ## Core features
-- **100% client-side**: the CSV is parsed in your browser only. Nothing is uploaded to any server.
+- **Free scanner: 100% client-side**: its CSV is parsed in your browser only. Nothing is uploaded to any server. The paid Pro Audit is a separate email-based service.
 - **Safe-delete checklist**: what to delete / in what order / what to verify first.
 - **No auto-delete**: you keep the final say.
 - **Free + open source**.

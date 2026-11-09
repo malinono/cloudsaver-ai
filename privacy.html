@@ -15,22 +15,26 @@
 </head>
 <body>
 <h1>Privacy Policy</h1>
-<p class="date">Last updated: 2026-10-26</p>
+<p class="date">Last updated: 2026-11-09</p>
 
-<p>This policy explains what CloudSaver AI ("we", "us") collects and how it is used. CloudSaver AI is a browser-based tool that scans your AWS Cost Explorer CSV file for wasted spend. It is provided by an independent developer; contact: <a href="mailto:support@getcloudsaver.com">support@getcloudsaver.com</a>.</p>
+<p>This policy explains what CloudSaver AI ("we", "us") collects and how it is used. CloudSaver AI is a browser-based tool that scans your AWS Cost &amp; Usage Report CSV file for cost signals worth reviewing. It is provided by an independent developer; contact: <a href="mailto:support@getcloudsaver.com">support@getcloudsaver.com</a>. It also offers an optional paid Pro Audit ($19), which handles billing data differently — see section 1a.</p>
 
 <h2>1. What we collect</h2>
 <ul>
   <li><strong>Waitlist email address.</strong> If you submit the waitlist form, your email is sent via our third-party form processor <a href="https://formspree.io" target="_blank" rel="noopener">Formspree</a> to our inbox, solely so we can send you product updates. We do not sell or share it.</li>
-  <li><strong>Your AWS Cost Explorer CSV.</strong> This file is parsed <strong>entirely inside your own browser</strong>. It is <strong>never uploaded to our servers</strong> and we never see its contents. No AWS credentials, IAM keys, or account access are requested or collected.</li>
+  <li><strong>Your AWS billing CSV (free scanner).</strong> With the free scanner, the file is parsed <strong>entirely inside your own browser</strong>. It is <strong>not uploaded to our servers</strong> and we do not see its contents. The paid Pro Audit is different — see section 1a.</li>
   <li><strong>Payment data.</strong> When you purchase the Pro Audit, payment is processed by a third-party payment provider. We do not receive or store your card details.</li>
 </ul>
+
+<!-- added 2026-11-09: mode B data-flow disclosure. Rollback: _复原备份/2026-11-09/privacy.html.ORIGINAL -->
+<h2>1a. Pro Audit ($19)</h2>
+<p>For the paid Pro Audit, you email your original billing CSV as an attachment to <a href="mailto:support@getcloudsaver.com">support@getcloudsaver.com</a>. The founder opens and reviews that file to produce your report. Your email provider and ours handle the transmission and storage of that message and attachment; we do not control their backup or retention practices. We do not ask for AWS credentials, IAM keys, or account access for either service. Details on how long we keep Pro Audit files are stated on the Pro Audit page.</p>
 
 <h2>2. What we do NOT collect</h2>
 <ul>
   <li>We do not request AWS credentials, IAM keys, or any cloud account access.</li>
-  <li>We do not use advertising or cross-site tracking cookies. We do send anonymous, aggregate usage statistics (for example, which pages are visited and whether a scan completes) through a first-party analytics endpoint. These statistics contain no AWS billing data, no file contents, and no personal information.</li>
-  <li>We do not collect names, billing addresses, or other personal data beyond the email you choose to submit.</li>
+  <li>We do not use advertising or cross-site tracking cookies. We do send usage events (for example, which pages are visited and whether a scan completes) through a first-party analytics endpoint. The free scanner does not upload the CSV itself, and these events carry no billing-derived values — no cost amounts, no bill line items, no finding counts. They contain no personal information.</li>
+  <li>We do not collect billing addresses. The free scanner collects no personal data. If you email us for a Pro Audit, we receive your email address and whatever details you choose to include in that message.</li>
 </ul>
 
 <h2>3. How we use information</h2>
@@ -39,7 +43,7 @@
 <h2>4. Third parties</h2>
 <ul>
   <li><strong>Formspree</strong> — processes waitlist email submissions. See <a href="https://formspree.io/legal/privacy-policy" target="_blank" rel="noopener">Formspree Privacy Policy</a>.</li>
-  <li><strong>First-party analytics</strong> — we collect anonymous usage statistics via a first-party analytics endpoint to understand how the tool is used. These events contain no AWS billing data or file contents, and no advertising or cross-site tracking is involved.</li>
+  <li><strong>First-party analytics</strong> — we receive usage events (page views, scan completed, and similar) through a first-party analytics endpoint. For the free scanner these events carry no billing-derived values. No advertising or cross-site tracking is involved.</li>
   <li><strong>Our payment provider</strong> — processes Pro Audit transactions and handles tax compliance on our behalf. We do not receive or store your card details.</li>
 </ul>
 
