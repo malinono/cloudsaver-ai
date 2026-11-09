@@ -3,14 +3,14 @@
 <head data-page-node-id="b2CbQHrmBuKNPSc2aoidPw">
 <meta charset="UTF-8" data-page-node-id="MeACDeM467oeXJ5jgc8pYD">
 <meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="KjZiGc6bIKy0metlSOsoho">
-<meta name="description" content="Free browser-only AWS cost checker. Drop your CUR CSV and get a prioritized checklist of cost items worth reviewing — with the free scanner, your file never leaves your machine. No upload, no account. Optional $19 Pro Audit." data-page-node-id="KWkl7ym3BAbDGc2CMLjxM8">
+<meta name="description" content="Free browser-only AWS cost checker. Drop your monthly billing CSV and get a prioritized checklist of cost items worth reviewing — with the free scanner, your file never leaves your machine. No upload, no account. Optional $19 Pro Audit." data-page-node-id="KWkl7ym3BAbDGc2CMLjxM8">
 <meta property="og:type" content="website" data-page-node-id="zD5uoNhUygVECAhvtlKmGF">
 <meta property="og:title" content="CloudSaver AI — Free Local AWS Cost Checker" data-page-node-id="CNBf6TP3rva9ijqhKM8vIX">
-<meta property="og:description" content="Free, private AWS cost checker. The free scanner reads your CUR CSV locally — your file never leaves your machine. No upload, no account. Get a prioritized checklist of cost items worth reviewing." data-page-node-id="9wGCqLgmREHKfG2HIOdRix">
+<meta property="og:description" content="Free, private AWS cost checker. The free scanner reads your monthly billing CSV locally — your file never leaves your machine. No upload, no account. Get a prioritized checklist of cost items worth reviewing." data-page-node-id="9wGCqLgmREHKfG2HIOdRix">
 <meta property="og:url" content="https://getcloudsaver.com" data-page-node-id="Lg1UR0HtzTotrBs5aGGW23">
 <meta name="twitter:card" content="summary_large_image" data-page-node-id="hB4VtWGxDhVIaqNlvLklLH">
 <meta name="twitter:title" content="CloudSaver AI — Free Local AWS Cost Checker" data-page-node-id="0V8emfaLDg3QN8yhbXvvzw">
-<meta name="twitter:description" content="Free, private AWS cost checker. The free scanner reads your CUR CSV locally — your file never leaves your machine. No upload, no account. Get a prioritized checklist of cost items worth reviewing." data-page-node-id="S4BHwIvtP0RAimDOO8ujZE">
+<meta name="twitter:description" content="Free, private AWS cost checker. The free scanner reads your monthly billing CSV locally — your file never leaves your machine. No upload, no account. Get a prioritized checklist of cost items worth reviewing." data-page-node-id="S4BHwIvtP0RAimDOO8ujZE">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -19,7 +19,7 @@
   "applicationCategory": "FinanceApplication",
   "operatingSystem": "Web",
   "url": "https://getcloudsaver.com",
-  "description": "Free, browser-only AWS cost checker. Drop your CUR CSV and get a prioritized checklist of cost items worth reviewing and what to check before making changes. With the free scanner, your file never leaves your machine. No upload, no account.",
+  "description": "Free, browser-only AWS cost checker. Drop your monthly billing CSV and get a prioritized checklist of cost items worth reviewing and what to check before making changes. With the free scanner, your file never leaves your machine. No upload, no account.",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
 }
 </script>
@@ -326,7 +326,7 @@ input[type="file"] { display: none; }
     <div class="upload-icon" data-page-node-id="UPb015MVLGG0L8LS3IZQev">&#128230;</div>
     <h3 data-page-node-id="5NiUVsQIptlKcYKWz4udN1">Drop your AWS billing CSV here</h3>
     <p data-page-node-id="9uA2myvGuCdRChYP9X93fi">Or click to browse. The free scanner keeps your CSV local — never uploaded.</p>
-    <p class="formats" data-page-node-id="hkbuHeVZwYqfSPEvKuF7VR">Supports: AWS Cost & Usage Report (.csv)</p>
+    <p class="formats" data-page-node-id="hkbuHeVZwYqfSPEvKuF7VR">Supports: one monthly billing .csv from a single account and billing period</p>
     <input type="file" id="file-input" accept=".csv" data-page-node-id="Jvqf5HMFMK29Iz1sMFypQ3">
   </div>
 
@@ -588,7 +588,7 @@ async function processFile(file) {
       track('scan_invalid_file');
       processingSection.style.display = 'none';
       uploadCard.parentElement.style.display = '';
-      alert('This does not look like an AWS Cost & Usage Report (CUR) CSV. Please export your CUR from AWS Billing and try again.');
+      alert('This does not look like an AWS billing CSV. Please export a monthly bill CSV from the AWS Billing Console and try again.');
       return;
     }
 
@@ -618,7 +618,7 @@ async function processFile(file) {
     console.error('scan failed locally:', err);
     processingSection.style.display = 'none';
     uploadCard.parentElement.style.display = '';
-    alert('Something went wrong while analyzing your file. Please make sure it is a valid AWS CUR CSV and try again.');
+    alert('Something went wrong while analyzing your file. Please make sure it is a monthly billing CSV and try again.');
   }
 }
 
@@ -700,7 +700,7 @@ function analyzeWaste(rows) {
         type: 'zombie',
         severity: 'high',
         title: 'Possible Unattached Resource',
-        description: `${service}: ${resource || desc || 'Unattached resource'} appears in the bill with no associated activity in the CUR. Possible leftover after a migration or project closure — verify in the console before releasing.`,
+        description: `${service}: ${resource || desc || 'Unattached resource'} appears in the bill with no associated activity in the CSV. Possible leftover after a migration or project closure — verify in the console before releasing.`,
         wastedAmount: cost,
         savingsTip: `Verify in the AWS console before releasing. If confirmed unused, releasing could save $${cost.toFixed(2)}/mo.`
       });

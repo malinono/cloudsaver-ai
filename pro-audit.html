@@ -193,7 +193,7 @@ footer a { color: var(--text-muted); text-decoration: underline; }
         <div class="step-num">2</div>
         <div class="step-body">
           <h4>You send us your AWS billing data</h4>
-          <p>Export your monthly Cost &amp; Usage Report as CSV and email it to us (steps below). No AWS login or IAM access required.</p>
+          <p>Export your monthly billing CSV from the AWS Billing Console and email it to us (steps below). No AWS login or IAM access required.</p>
         </div>
       </div>
       <div class="step-item">
@@ -220,12 +220,12 @@ footer a { color: var(--text-muted); text-decoration: underline; }
       <p style="color:var(--text-secondary);font-size:14px;margin-bottom:6px;">The easiest export to get — your monthly cost CSV:</p>
       <div class="code-box">
 <span class="c"># In the AWS Console:</span>
-1. Go to <strong>Billing</strong> → <strong>Cost &amp; Usage Reports</strong>
-2. (Or simpler) Go to <strong>Billing Dashboard</strong> → <strong>Bills</strong>
-3. Select a month → click <strong>"Download CSV"</strong>
-4. Attach that CSV to your email
+1. Go to <strong>Billing Dashboard</strong> → <strong>Bills</strong>
+2. Select a month → click <strong>"Download CSV"</strong>
+3. Attach that CSV to your email
       </div>
-      <div class="note">Prefer a deeper audit? A full CUR (Cost &amp; Usage Report) export gives us more detail. Either works — the monthly CSV is enough to start.</div>
+      <!-- added 2026-11-09: $19 input scope. Rollback: _复原备份/2026-11-09_1425/pro-audit.html.ORIGINAL -->
+      <div class="note">one uncompressed .csv, from a single aws account and a single billing period, with a cost amount column plus service / usage / resource / description columns. full cur, multiple accounts or months, compressed files, or files missing columns: email us first to confirm before you pay.</div>
     </div>
     <div class="card">
       <h3 style="font-size:16px;font-weight:700;margin-bottom:10px;">B. A few context details (optional, helps us prioritize)</h3>
