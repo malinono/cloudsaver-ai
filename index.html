@@ -572,6 +572,7 @@ async function processFile(file) {
   processingSection.style.display = 'block';
   resultsSection.style.display = 'none';
 
+  let stage = 'read';
   try {
     // Step 1
     await sleep(800);
@@ -579,6 +580,7 @@ async function processFile(file) {
     document.getElementById('step2').className = 'active';
 
     const text = await file.text();
+    stage = 'parse';
     const rows = parseCSV(text);
 
     // Reject obviously non-CUR files early: clearer UX + keeps the funnel clean
@@ -596,6 +598,7 @@ async function processFile(file) {
     document.getElementById('step3').className = 'active';
 
     const analysis = analyzeWaste(rows);
+    stage = 'render';
 
     // Step 3
     await sleep(600);
@@ -610,7 +613,9 @@ async function processFile(file) {
     document.getElementById('step2').className = '';
     document.getElementById('step3').className = '';
   } catch (err) {
-    track('scan_error', { error: String((err && err.message) || err) });
+    // 2026-11-09: fixed error codes only — never send raw error strings (may contain file contents)
+    track('scan_error', { code: 'scan_failed_' + stage });
+    console.error('scan failed locally:', err);
     processingSection.style.display = 'none';
     uploadCard.parentElement.style.display = '';
     alert('Something went wrong while analyzing your file. Please make sure it is a valid AWS CUR CSV and try again.');
@@ -890,7 +895,8 @@ function isStorageTierIssue(service, usage, desc, cost) {
 
 // ========== RENDER RESULTS ==========
 function renderResults(analysis) {
-  track('scan_complete', { waste: analysis.totalWaste, findings: analysis.findings.length });
+  // 2026-11-09: no billing-derived fields leave the browser (see privacy.html)
+  track('scan_complete');
   document.getElementById('waste-total').textContent = '$' + analysis.totalWaste.toLocaleString('en-US', {minimumFractionDigits: 2});
   document.getElementById('waste-yearly').textContent = "That's $" + analysis.yearlyWaste.toLocaleString('en-US', {minimumFractionDigits: 2}) + ' thrown away each year';
   const ctaWaste = document.getElementById('cta-waste');
