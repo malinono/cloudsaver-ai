@@ -141,18 +141,21 @@ nav .cta-btn:hover { background: var(--blue-dark); }
 .results-header .waste-monthly { font-size: 18px; color: var(--text-secondary); margin-top: 8px; }
 .results-header .waste-yearly { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
 
-/* ---- Pro Audit CTA on scan results (highest-intent moment) ---- */
-.waitlist-section { margin-top: 36px; padding: 28px 24px; background: var(--card-bg, #fff); border: 1px solid var(--border, #e5e7eb); border-radius: 16px; text-align: center; }
-.waitlist-section h3 { font-size: 22px; margin-bottom: 8px; }
-.waitlist-section .wl-sub { font-size: 15px; color: var(--text-secondary, #475569); max-width: 580px; margin: 0 auto 18px; line-height: 1.5; }
-.waitlist-section .wl-sub strong { color: var(--text, #111); }
-.pro-cta-actions { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; }
-.cta-or { font-size: 12px; color: var(--text-muted, #94a3b8); text-transform: uppercase; letter-spacing: 0.1em; }
-.waitlist-section .wl-note { font-size: 13px; color: var(--text-muted, #94a3b8); margin-top: 14px; }
-.waitlist-form { display: inline-flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-.waitlist-form input[type=email] { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e5e7eb); font-size: 14px; min-width: 220px; }
-.waitlist-form button { padding: 10px 18px; border-radius: 8px; border: none; background: var(--blue, #2563eb); color: #fff; font-weight: 600; cursor: pointer; font-size: 14px; }
-.waitlist-thanks { color: var(--green, #059669); font-weight: 600; margin-top: 12px; }
+/* ---- Pro Audit CTA on scan results (highest-intent moment) ----
+   Scoped to #results-section: the hero waitlist form below reuses .waitlist-* class
+   names, so unscoped rules here get overridden by the later global rules (layout bug).
+   Also reset max-width / auto margin inherited from those global rules (wide gap bug). */
+#results-section .waitlist-section { margin-top: 36px; padding: 28px 24px; background: var(--card-bg, #fff); border: 1px solid var(--border, #e5e7eb); border-radius: 16px; text-align: center; }
+#results-section .waitlist-section h3 { font-size: 22px; margin-bottom: 8px; }
+#results-section .waitlist-section .wl-sub { font-size: 15px; color: var(--text-secondary, #475569); max-width: 580px; margin: 0 auto 18px; line-height: 1.5; }
+#results-section .waitlist-section .wl-sub strong { color: var(--text, #111); }
+#results-section .pro-cta-actions { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; }
+#results-section .cta-or { font-size: 12px; color: var(--text-muted, #94a3b8); text-transform: uppercase; letter-spacing: 0.1em; }
+#results-section .waitlist-section .wl-note { font-size: 13px; color: var(--text-muted, #94a3b8); margin-top: 14px; }
+#results-section .waitlist-form { display: inline-flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: none; margin: 0; }
+#results-section .waitlist-form input[type=email] { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border, #e5e7eb); font-size: 14px; min-width: 220px; }
+#results-section .waitlist-form button { padding: 10px 18px; border-radius: 8px; border: none; background: var(--blue, #2563eb); color: #fff; font-weight: 600; cursor: pointer; font-size: 14px; }
+#results-section .waitlist-thanks { color: var(--green, #059669); font-weight: 600; margin-top: 12px; }
 
 .summary-cards {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;
