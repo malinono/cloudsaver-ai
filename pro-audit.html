@@ -288,18 +288,25 @@ footer a { color: var(--text-muted); text-decoration: underline; }
 <script>
 // Funnel tracking — see cloudsaver-ai/track-worker.js
 const TRACK_ENDPOINT = 'https://cloudsaver-track.malinono1015.workers.dev/track';
-const IS_TEST = new URLSearchParams(location.search).get('test') === '1';
+const QS = new URLSearchParams(location.search);
+const IS_TEST = QS.get('test') === '1';
+// 2026-11-13: index.html CTA forms return with ?src=paid, this page's own form
+// returns with ?paid=1. Accept both, and never let "paid" leak in as a traffic source.
+const RETURNED_FROM_PAYMENT = QS.get('paid') === '1' || QS.get('src') === 'paid';
+const RAW_SRC = QS.get('src');
+const PAGE_SRC = (RAW_SRC && RAW_SRC !== 'paid') ? RAW_SRC : 'direct';
 function track(event, meta) {
   try {
-    const src = IS_TEST ? 'test:self' : (new URLSearchParams(location.search).get('src') || 'direct');
+    const src = IS_TEST ? 'test:self' : PAGE_SRC;
     const body = JSON.stringify(Object.assign({ event: event, src: src, ts: Date.now(), page: location.pathname, test: IS_TEST ? 1 : 0 }, meta || {}));
     if (navigator.sendBeacon) navigator.sendBeacon(TRACK_ENDPOINT, new Blob([body], { type: 'text/plain' }));
     else fetch(TRACK_ENDPOINT, { method: 'POST', body: body, headers: { 'Content-Type': 'text/plain' }, keepalive: true });
   } catch (e) {}
 }
 track('pro_audit_view');
-// Payment confirmation beacon: PayPal NCP returns here with ?paid=1 after a completed payment
-if (new URLSearchParams(location.search).get('paid') === '1') {
+// Payment confirmation beacon: PayPal NCP returns here after payment.
+// Runtime return flow is still unverified (needs a real end-to-end payment).
+if (RETURNED_FROM_PAYMENT) {
   track('paid', { src: 'ncp' });
 }
 document.querySelectorAll('form[action*="paypal.com/ncp/payment"]').forEach(f => {

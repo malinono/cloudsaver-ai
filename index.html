@@ -172,6 +172,8 @@ nav .cta-btn:hover { background: var(--blue-dark); }
 
 .findings-list { margin-bottom: 40px; }
 .section-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+#scan-notes { margin: 0 0 14px; font-size: 13px; line-height: 1.55; color: var(--text-secondary); }
+#scan-notes .note-row { padding: 8px 12px; border-left: 3px solid var(--amber); background: var(--amber-light); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin-bottom: 6px; }
 
 .finding-item {
   background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
@@ -371,6 +373,7 @@ input[type="file"] { display: none; }
 
     <div class="findings-list" data-page-node-id="fG0vyAVCmFNBR0YBvnpGhH">
       <div class="section-title" data-page-node-id="H8oN6X0exv2LCfdhEY9PNz">Detail Findings</div>
+      <div id="scan-notes" data-page-node-id="csScanNotes20261113"></div>
       <div id="findings-container" data-page-node-id="QOCDdt3nybUqzXkG8RoZ75"></div>
     </div>
 
@@ -587,7 +590,15 @@ async function processFile(file) {
     const rows = parseCSV(text);
 
     // Reject obviously non-CUR files early: clearer UX + keeps the funnel clean
-    if (rows.length === 0 || !looksLikeCUR(rows[0])) {
+    // 2026-11-13: also require a real cost column. detectColumns() falls back to
+    // the last column when none matches, which used to turn a non-billing CSV into
+    // a "$0 / looks clean" result. This only rejects files we cannot read at all;
+    // it does not change which billing formats are claimed as supported.
+    const headerKeys = Object.keys(rows[0] || {}).map(k => k.toLowerCase().trim());
+    const hasCostColumn = headerKeys.some(k =>
+      k.includes('blendedcost') || k.includes('unblendedcost') ||
+      k.includes('amount') || k.includes('cost'));
+    if (rows.length === 0 || !looksLikeCUR(rows[0]) || !hasCostColumn) {
       track('scan_invalid_file');
       processingSection.style.display = 'none';
       uploadCard.parentElement.style.display = '';
@@ -601,6 +612,7 @@ async function processFile(file) {
     document.getElementById('step3').className = 'active';
 
     const analysis = analyzeWaste(rows);
+    analysis.skippedRows = lastSkippedRows;
     stage = 'render';
 
     // Step 3
@@ -628,8 +640,11 @@ async function processFile(file) {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ========== CSV PARSER ==========
+let lastSkippedRows = 0;   // 2026-11-13: rows dropped for having fewer columns than the header
+
 function parseCSV(text) {
   const lines = text.trim().split('\n');
+  lastSkippedRows = 0;
   if (lines.length < 2) return [];
 
   const headers = parseCSVLine(lines[0]);
@@ -637,7 +652,7 @@ function parseCSV(text) {
 
   for (let i = 1; i < lines.length; i++) {
     const values = parseCSVLine(lines[i]);
-    if (values.length < headers.length) continue;
+    if (values.length < headers.length) { lastSkippedRows++; continue; }
     const row = {};
     headers.forEach((h, idx) => row[h.trim()] = (values[idx] || '').trim());
     rows.push(row);
@@ -794,6 +809,7 @@ function analyzeWaste(rows) {
     overprovWaste: Math.round(overprovWaste * 100) / 100,
     otherWaste: Math.round(otherWaste * 100) / 100,
     findings: findings.slice(0, 10),
+    totalFindingCount: findings.length,
     totalSpend: Math.round(Object.values(services).reduce((s, v) => s + v, 0) * 100) / 100
   };
 }
@@ -936,8 +952,19 @@ function renderResults(analysis) {
 
   // Detail findings
   const container = document.getElementById('findings-container');
+  const notesEl = document.getElementById('scan-notes');
+  const notes = [];
+  if (analysis.skippedRows > 0) {
+    const n = analysis.skippedRows;
+    notes.push(`${n} ${n === 1 ? 'row was' : 'rows were'} skipped: fewer columns than the header. Numbers above cover only what we could read.`);
+  }
+  if (analysis.totalFindingCount > analysis.findings.length) {
+    notes.push(`Showing the top ${analysis.findings.length} of ${analysis.totalFindingCount} items. Totals and cards above cover all ${analysis.totalFindingCount}.`);
+  }
+  if (notesEl) notesEl.innerHTML = notes.map(t => `<div class="note-row">${t}</div>`).join('');
+
   if (analysis.findings.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--green);font-size:16px;">No waste detected! Your cloud setup looks clean.</div>';
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);font-size:16px;line-height:1.6;">No cost items matched the checks in this file. This is not a verdict on your bill. A CSV cannot show how a resource is used, so check your bill and the AWS console before changing anything.</div>';
     const wlHide = document.getElementById('waitlist-section');
     if (wlHide) wlHide.style.display = 'none';
   } else {
