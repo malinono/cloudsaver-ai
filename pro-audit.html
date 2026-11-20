@@ -125,6 +125,10 @@ nav .back-btn:hover { background: #dbeafe; }
 .faq-item p { color: var(--text-secondary); font-size: 14px; }
 footer { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 13px; border-top: 1px solid var(--border); margin-top: 40px; }
 footer a { color: var(--text-muted); text-decoration: underline; }
+.payment-success { background:#ecfdf5; border:1px solid #10b981; border-left:4px solid #059669; border-radius:8px; padding:16px 20px; margin-bottom:24px; }
+.payment-success .ps-title { color:#065f46; font-size:17px; font-weight:700; margin-bottom:6px; }
+.payment-success .ps-body { color:#065f46; font-size:14px; line-height:1.6; }
+.payment-success code { background:#d1fae5; padding:1px 5px; border-radius:4px; font-size:13px; }
 </style>
 </head>
 <body>
@@ -134,6 +138,11 @@ footer a { color: var(--text-muted); text-decoration: underline; }
 </nav>
 
 <div class="container">
+  <!-- payment success banner — shown only after PayPal NCP returns with ?paid=1 -->
+  <div id="payment-success" class="payment-success" style="display:none;">
+    <div class="ps-title">✓ Payment received. Thank you.</div>
+    <div class="ps-body">Next step: email your AWS billing CSV to <strong>support@getcloudsaver.com</strong> with the subject <code>Pro Audit — [your name / company]</code>. I'll send your report within 5 business days.</div>
+  </div>
   <section class="hero">
     <div class="badge">✓ One-time payment · $19</div>
     <h1>CloudSaver Pro Audit</h1>
@@ -316,6 +325,13 @@ track('pro_audit_view');
 // Runtime return flow is still unverified (needs a real end-to-end payment).
 if (RETURNED_FROM_PAYMENT) {
   track('paid', { src: 'ncp' });
+}
+// 2026-11-20: show success banner only on a real PayPal return (?paid=1).
+// Do NOT reuse RETURNED_FROM_PAYMENT here — it also matches ?src=paid from
+// the homepage CTA, where the visitor has NOT paid yet.
+if (QS.get('paid') === '1') {
+  const okBanner = document.getElementById('payment-success');
+  if (okBanner) okBanner.style.display = 'block';
 }
 document.querySelectorAll('form[action*="paypal.com/ncp/payment"]').forEach(f => {
   f.addEventListener('submit', () => track('pro_audit_pay_click'));
